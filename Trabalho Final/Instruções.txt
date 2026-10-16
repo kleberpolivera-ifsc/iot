@@ -1,0 +1,12 @@
+
+Copiar os arquivos para um pasta qualquer
+Execute os comandos abaixo para criar o ambiente virtual:
+Criar ambiente virtual:			python -m venv .env
+Ativar ambiente virtual:		.env\Scripts\activate
+Entrar na pasta arquivos:		cd arquivos
+instalar bibliotecas:			pip install -r requirements.txt
+rodar o comando para iniciar:	streamlit run app.py
+	
+	
+	
+Video com demonstração do código funcionando em https://youtu.be/Cv-0h-VIPss?si=jplMnAaJXV2NS2OQ 

@@ -1,0 +1,9 @@
+
+import paho.mqtt.client as mqtt
+def on_message(client, userdata, msg):
+	print(msg.topic, msg.payload.decode())
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+client.on_message = on_message
+client.connect("broker.emqx.io", 1883)
+client.subscribe("dashboard/iot/telemetria")
+client.loop_forever()
