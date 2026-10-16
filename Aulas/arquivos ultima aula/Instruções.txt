@@ -1,1 +1,0 @@
-Para funcionar tem que instalar o ambiente virtual, instruções na pasta Trabalho Final
