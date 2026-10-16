@@ -1,0 +1,61 @@
+--ISNTALANDO FIRMWARE
+
+
+pip install esptool
+
+--resetar (boot es)
+python -m esptool --port COM5 erase_flash
+
+
+--resetar (boot es)
+python -m esptool --port COM5 --chip esp32 write-flash -z 0x1000 firmware.bin		
+-->> ese de cima nao deu rodar o de baixo para gravar com velocidade reduzida na gravacao 
+
+--resetar (boot es)
+python -m esptool --port COM5 --chip esp32 --baud 115200 write-flash -z 0x1000 firmware.bin
+
+-->> esse de cima tb nao deu vamos apagar tudo e fazer de outro jeito 
+
+--resetar (boot es)  
+python -m esptool --port COM5 erase-flash
+
+--resetar (boot es) 
+python -m esptool --port COM5 --chip esp32 --baud 115200 write-flash -fm dio -z 0x1000 firmware.bin
+
+
+--eu erro rodeio de baixo 
+
+--resetar (boot es) 
+python -m esptool --port COM5 --chip esp32 --baud 115200 --no-stub write-flash -z 0x1000 firmware.bin
+
+
+deu certo agora 
+
+
+--resetar (boot es) 
+--abrir o tony
+
+
+====================================================================resumo
+====================================================================
+
+
+
+
+--Rodar comando
+pip install esptool
+
+--resetar (boot es)
+--Rodar comando
+python -m esptool --port COM5 erase_flash
+
+  
+--resetar (boot es) 
+--Rodar comando
+python -m esptool --port COM5 --chip esp32 --baud 115200 --no-stub write-flash -z 0x1000 firmware.bin
+
+ 
+--resetar (boot es) 
+--abrir o tony
+
+

@@ -1,0 +1,69 @@
+import network
+import time
+import random
+import ubinascii
+import machine
+from umqtt.simple import MQTTClient
+
+# 1. FUNÇÃO DE CONEXÃO WI-FI PADRÃO DO WOKWI
+def conecta_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    if not wlan.isconnected():
+        print('Conectando ao Wi-Fi do Wokwi...')
+        # No Wokwi, a rede padrão sempre é "Wokwi-GUEST" sem senha
+        wlan.connect('Wokwi-GUEST', '')
+        
+        while not wlan.isconnected():
+            print(".", end="")
+            time.sleep(0.5)
+            
+    print('\nWi-Fi Conectado! IP:', wlan.ifconfig()[0])
+    return wlan
+
+# Inicializa o Wi-Fi
+wifi = conecta_wifi()
+
+# Configura o ID único do cliente MQTT
+client_id = ubinascii.hexlify(machine.unique_id())
+print(f"Client ID: {client_id}")
+
+# Configura o cliente MQTT na porta padrão (1883)
+client = MQTTClient(client_id, "broker.hivemq.com", port=1883)
+
+# 2. FUNÇÃO PARA CONECTAR/RECONECTAR AO BROKER
+def conecta_broker():
+    try:
+        print("Conectando ao Broker HiveMQ...")
+        client.connect()
+        print("Conectado com sucesso!")
+        return True
+    except OSError:
+        print("Falha ao conectar ao broker. Tentando novamente em breve...")
+        return False
+
+# Primeira tentativa de conexão
+conectado = conecta_broker()
+
+while True:
+    # Garante que o Wi-Fi e o Broker estejam conectados antes de enviar
+    if not wifi.isconnected():
+        conecta_wifi()
+        conectado = False
+        
+    if not conectado:
+        conectado = conecta_broker()
+        time.sleep(2)
+        continue
+
+    print("Oi")
+    try:
+        t = random.randint(20, 30)
+        # Envia a mensagem para o tópico
+        client.publish("topico_do_kebi", "{}".format(t))
+        print(f"Enviado para topico_do_kebi: {t}")
+    except OSError as e:
+        print(f"Erro ao enviar: {e}")
+        conectado = False # Marca como desconectado para forçar a reconexão no próximo loop
+        
+    time.sleep(5)

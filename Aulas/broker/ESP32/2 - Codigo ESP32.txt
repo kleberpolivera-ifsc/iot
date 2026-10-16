@@ -1,0 +1,88 @@
+import network
+import time
+import random
+import ubinascii
+import machine
+from umqtt.simple import MQTTClient
+
+SSID = "Sara"
+PASSWORD = "10062013"
+
+# 1. FUNÇÃO DE CONEXÃO WI-FI (Com return adicionado)
+def conectar_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    
+    if not wlan.isconnected():
+        print("Conectando ao Wi-Fi...", end='')
+        wlan.connect(SSID, PASSWORD)
+        
+        tentativas = 0
+        while not wlan.isconnected() and tentativas < 20:
+            time.sleep(0.5)
+            print('.', end='')
+            tentativas += 1
+            
+    if wlan.isconnected():
+        print("\nWi-Fi Conectado com sucesso!")
+        print("Configurações de Rede:", wlan.ifconfig())
+    else:
+        print("\nFalha ao conectar ao Wi-Fi.")
+        
+    return wlan  # Retorna o objeto wlan para evitar o erro de NoneType
+
+# Inicializa o Wi-Fi
+wifi = conectar_wifi()
+
+# ID Único para evitar conflitos no HiveMQ
+client_id = ubinascii.hexlify(machine.unique_id())
+print(f"Client ID: {client_id}")
+
+#=================================================================================
+# 			Configura o cliente MQTT NO BROKER ONLINE
+#=================================================================================
+
+# 		https://www.hivemq.com/demos/websocket-client/
+
+client = MQTTClient(client_id, "broker.hivemq.com", port=1883, keepalive=60)
+#client = MQTTClient(client_id, "test.mosquitto.org", port=1883, keepalive=60)
+
+#=================================================================================
+
+
+# 2. FUNÇÃO PARA CONECTAR AO BROKER
+def conecta_broker():
+    try:
+        print("Conectando ao Broker HiveMQ...")
+        client.connect()
+        print("Conectado com sucesso ao Broker!")
+        return True
+    except OSError as e:
+        print(f"Falha ao conectar ao broker ({e}). Tentando novamente...")
+        return False
+
+# Primeira tentativa de conexão ao broker
+conectado = conecta_broker()
+
+while True:
+    # Garante que o Wi-Fi e o Broker estejam ativos
+    if not wifi.isconnected():
+        wifi = conectar_wifi()
+        conectado = False
+        
+    if not conectado:
+        conectado = conecta_broker()
+        time.sleep(2)
+        continue
+
+    try:
+        t = random.randint(20, 30)
+        # Envia a mensagem para o tópico
+        client.publish("topico_do_kebi", "{}".format(t))
+        print(f"Enviado para topico_do_kebi: {t}")
+    except OSError as e:
+        print(f"Erro ao enviar mensagem: {e}")
+        conectado = False  # Força reconexão na próxima volta
+        
+    time.sleep(5)
+
